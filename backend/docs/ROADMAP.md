@@ -44,7 +44,7 @@ Execute os passos na sequência indicada. Cada arquivo possui o roteiro técnico
   - Models `User` e `Pet` com casts e helpers de perfil (`isAdmin()`).
   - Seeders com contas de `admin`, `agent` e dados fictícios de pets.
 
-- [ ] **[Passo 2: Autenticação, Sanctum e Papéis](file:///c:/Users/luizm/Desktop/adote+/backend/docs/02-auth-roles-sanctum.md)**
+- [x] **[Passo 2: Autenticação, Sanctum e Papéis](file:///c:/Users/luizm/Desktop/adote+/backend/docs/02-auth-roles-sanctum.md)**
   - Configuração do Sanctum para emissão e revogação de Bearer Tokens.
   - Implementação de `AuthController` (`login`, `logout`, `me`).
   - Middleware / Gate / Policy para validação de `role = admin`.
