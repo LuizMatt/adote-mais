@@ -2,13 +2,15 @@
 
 Este documento organiza as etapas de desenvolvimento do backend da **Adota+ API**, definindo a ordem dos passos, dependências técnicas, matriz de controle de acesso e checklist de progresso.
 
+> ⚠️ **Convenção de Código:** Todo o código-fonte, nomes de tabelas, colunas, variáveis, rotas, query params e valores de enums são estritamente em **INGLÊS** (`name`, `species`, `size`, `vaccines`, `status`, etc.).
+
 ---
 
 ## 1. Visão Geral da Arquitetura
 
 - **Framework**: PHP 8.2+ e Laravel 11
 - **Banco de Dados**: SQLite
-- **Autenticação**: Laravel Sanctum (Tokens Bearer)
+- **Autenticação**: Laravel Sanctum (Bearer Tokens)
 - **Armazenamento de Mídia**: Laravel Storage (disco `public` + link simbólico)
 - **Documentação de Steps**: Pasta `backend/docs/`
 
@@ -16,9 +18,9 @@ Este documento organiza as etapas de desenvolvimento do backend da **Adota+ API*
 
 ## 2. Matriz de Controle de Acesso (RBAC)
 
-O sistema possui dois níveis de usuário interno (`admin` e `agente`), além do acesso público não autenticado para consulta ao catálogo:
+O sistema possui dois níveis de usuário interno (`admin` e `agent`), além do acesso público não autenticado para consulta ao catálogo:
 
-| Funcionalidade | Endpoint | Público | Agente | Admin |
+| Funcionalidade | Endpoint | Público | Agent | Admin |
 | :--- | :--- | :---: | :---: | :---: |
 | **Listar pets (com filtros)** | `GET /api/pets` | ✅ Sim | ✅ Sim | ✅ Sim |
 | **Visualizar detalhes do pet** | `GET /api/pets/{id}` | ✅ Sim | ✅ Sim | ✅ Sim |
@@ -36,11 +38,11 @@ O sistema possui dois níveis de usuário interno (`admin` e `agente`), além do
 
 Execute os passos na sequência indicada. Cada arquivo possui o roteiro técnico detalhado, códigos e comandos de validação:
 
-- [ ] **[Passo 1: Modelos e Banco de Dados](file:///c:/Users/luizm/Desktop/adote+/backend/docs/01-database-models.md)**
-  - Migração para adicionar coluna `role` (`admin` / `agente`) na tabela `users`.
-  - Migração da tabela `pets` (campos, enums, status padrão `disponivel`, JSON de vacinas).
+- [x] **[Passo 1: Modelos e Banco de Dados](file:///c:/Users/luizm/Desktop/adote+/backend/docs/01-database-models.md)**
+  - Migração para adicionar coluna `role` (`admin` / `agent`) na tabela `users`.
+  - Migração da tabela `pets` (colunas em inglês: `name`, `species`, `size`, `approximate_age`, `gender`, `status`, `vaccines` em JSON, etc.).
   - Models `User` e `Pet` com casts e helpers de perfil (`isAdmin()`).
-  - Seeders com contas de `admin`, `agente` e dados fictícios de pets.
+  - Seeders com contas de `admin`, `agent` e dados fictícios de pets.
 
 - [ ] **[Passo 2: Autenticação, Sanctum e Papéis](file:///c:/Users/luizm/Desktop/adote+/backend/docs/02-auth-roles-sanctum.md)**
   - Configuração do Sanctum para emissão e revogação de Bearer Tokens.
@@ -50,8 +52,8 @@ Execute os passos na sequência indicada. Cada arquivo possui o roteiro técnico
 - [ ] **[Passo 3: CRUD de Pets e Regras de Negócio](file:///c:/Users/luizm/Desktop/adote+/backend/docs/03-pets-api-crud.md)**
   - Implementação do `PetController` (rotas públicas e protegidas).
   - Form Requests de validação (`StorePetRequest`, `UpdatePetRequest`, `UpdatePetStatusRequest`).
-  - `PetResource` para padronização do contrato JSON e URL de fotos.
-  - Regra de negócio de adoção (exigência de `adotante_nome` no status `adotado`).
+  - `PetResource` para padronização do contrato JSON e URL de fotos (`photo_url`).
+  - Regra de negócio de adoção (exigência de `adopter_name` no status `adopted`).
 
 - [ ] **[Passo 4: Upload de Mídia, Storage e CORS](file:///c:/Users/luizm/Desktop/adote+/backend/docs/04-upload-storage-cors.md)**
   - Configuração do disco `public` e link simbólico (`php artisan storage:link`).

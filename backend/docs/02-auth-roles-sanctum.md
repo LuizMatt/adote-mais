@@ -1,6 +1,6 @@
 # Passo 2: Autenticação, Sanctum e Papéis
 
-**Objetivo:** Implementar o fluxo de autenticação por tokens Bearer usando o Laravel Sanctum, expondo login/logout e criando o controle de autorização para diferenciar ações de `admin` e `agente`.
+**Objetivo:** Implementar o fluxo de autenticação por tokens Bearer usando o Laravel Sanctum, expondo login/logout e criando o controle de autorização para diferenciar ações de `admin` e `agent`.
 
 ---
 
@@ -56,7 +56,7 @@ class User extends Authenticatable
 
           if (! $user || ! Hash::check($request->password, $user->password)) {
               throw ValidationException::withMessages([
-                  'email' => ['Credenciais fornecidas são inválidas.'],
+                  'email' => ['Invalid credentials provided.'],
               ]);
           }
 
@@ -66,7 +66,7 @@ class User extends Authenticatable
           $token = $user->createToken('auth_token')->plainTextToken;
 
           return response()->json([
-              'message' => 'Login realizado com sucesso',
+              'message' => 'Login successful',
               'access_token' => $token,
               'token_type' => 'Bearer',
               'user' => [
@@ -83,7 +83,7 @@ class User extends Authenticatable
           $request->user()->currentAccessToken()->delete();
 
           return response()->json([
-              'message' => 'Logout efetuado com sucesso',
+              'message' => 'Successfully logged out',
           ]);
       }
 
@@ -103,7 +103,7 @@ class User extends Authenticatable
 
 ---
 
-## 3. Controle de Acesso e Permissão (`AdminRoleMiddleware`)
+## 3. Controle de Acesso e Permissão (`CheckAdminRole`)
 
 Para proteger rotas que exigem perfil exclusivo de administrador:
 
@@ -126,7 +126,7 @@ Para proteger rotas que exigem perfil exclusivo de administrador:
       {
           if (! $request->user() || ! $request->user()->isAdmin()) {
               return response()->json([
-                  'message' => 'Acesso negado. Ação restrita a administradores.',
+                  'message' => 'Access denied. Action restricted to administrators.',
               ], Response::HTTP_FORBIDDEN);
           }
 
@@ -177,7 +177,7 @@ Route::middleware('auth:sanctum')->group(function () {
    ```bash
    curl -X POST http://127.0.0.1:8000/api/login \
      -H "Content-Type: application/json" \
-     -d '{"email":"admin@adotamais.local","password":"senha-errada"}'
+     -d '{"email":"admin@adotamais.local","password":"wrong-password"}'
    ```
    *Esperado:* `422 Unprocessable Entity`.
 
@@ -186,11 +186,3 @@ Route::middleware('auth:sanctum')->group(function () {
    curl -X GET http://127.0.0.1:8000/api/user -H "Accept: application/json"
    ```
    *Esperado:* `401 Unauthorized`.
-
-4. **Teste de Logout:**
-   ```bash
-   curl -X POST http://127.0.0.1:8000/api/logout \
-     -H "Accept: application/json" \
-     -H "Authorization: Bearer <SEU_TOKEN>"
-   ```
-   *Esperado:* `200 OK` e token invalidado.

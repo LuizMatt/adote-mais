@@ -28,31 +28,31 @@ FILESYSTEM_DISK=public
 ### 2.1 Salvando a Foto no `PetController@store`
 Ao receber o formulário `multipart/form-data`:
 ```php
-if ($request->hasFile('foto')) {
+if ($request->hasFile('photo')) {
     // Salva em storage/app/public/pets/<hash>.jpg
-    $path = $request->file('foto')->store('pets', 'public');
-    $petData['foto_path'] = $path;
+    $path = $request->file('photo')->store('pets', 'public');
+    $petData['photo_path'] = $path;
 }
 ```
 
 ### 2.2 Substituição de Foto no `PetController@update`
 Se uma nova foto for enviada durante a atualização:
 ```php
-if ($request->hasFile('foto')) {
+if ($request->hasFile('photo')) {
     // Remove foto anterior se existir
-    if ($pet->foto_path && Storage::disk('public')->exists($pet->foto_path)) {
-        Storage::disk('public')->delete($pet->foto_path);
+    if ($pet->photo_path && Storage::disk('public')->exists($pet->photo_path)) {
+        Storage::disk('public')->delete($pet->photo_path);
     }
 
-    $petData['foto_path'] = $request->file('foto')->store('pets', 'public');
+    $petData['photo_path'] = $request->file('photo')->store('pets', 'public');
 }
 ```
 
 ### 2.3 Exclusão de Foto no `PetController@destroy`
 Ao excluir um animal do banco, limpe o arquivo físico:
 ```php
-if ($pet->foto_path && Storage::disk('public')->exists($pet->foto_path)) {
-    Storage::disk('public')->delete($pet->foto_path);
+if ($pet->photo_path && Storage::disk('public')->exists($pet->photo_path)) {
+    Storage::disk('public')->delete($pet->photo_path);
 }
 $pet->delete();
 ```
@@ -61,9 +61,8 @@ $pet->delete();
 
 ## 3. Configuração do CORS (`config/cors.php`)
 
-Para permitir que a SPA frontend (consumindo via Vite em `http://localhost:5173` ou similar) envie requisições para a API e inclua o header `Authorization`:
+Para permitir que a SPA frontend envie requisições para a API e inclua o header `Authorization`:
 
-Se o arquivo `config/cors.php` ainda não existir, publique as configurações do Laravel ou crie-o:
 ```php
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
@@ -88,20 +87,10 @@ return [
 ];
 ```
 
-No Laravel 11, o CORS também pode ser configurado fluentemente no `bootstrap/app.php`:
-```php
-->withMiddleware(function (Middleware $middleware) {
-    $middleware->validateCsrfTokens(except: [
-        'api/*',
-    ]);
-})
-```
-
 ---
 
 ## 4. Critérios de Validação do Passo 4
 
-1. **Upload de Foto:** Enviar `POST /api/pets` como `multipart/form-data` contendo um arquivo de imagem no campo `foto`.
-2. **Acesso Público à Imagem:** Copiar a `foto_url` retornada no JSON e abrir no navegador. A imagem deve ser renderizada sem erros 404.
+1. **Upload de Foto:** Enviar `POST /api/pets` como `multipart/form-data` contendo um arquivo de imagem no campo `photo`.
+2. **Acesso Público à Imagem:** Copiar a `photo_url` retornada no JSON e abrir no navegador.
 3. **Limpeza Automática:** Atualizar a foto ou deletar o pet e verificar se o arquivo correspondente em `storage/app/public/pets` foi removido do disco.
-4. **Header CORS:** Realizar uma requisição de pré-vôo (`OPTIONS /api/pets`) com header `Origin: http://localhost:5173` e confirmar se a resposta contém `Access-Control-Allow-Origin`.

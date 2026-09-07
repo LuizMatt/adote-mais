@@ -1,6 +1,6 @@
 # Passo 3: CRUD de Pets e Regras de Negócio
 
-**Objetivo:** Implementar os endpoints do catálogo público de animais e as operações administrativas protegidas por autenticação e perfil (`admin` vs `agente`), com validações rígidas de formulário e padronização JSON.
+**Objetivo:** Implementar os endpoints do catálogo público de animais e as operações administrativas protegidas por autenticação e perfil (`admin` vs `agent`), com validações rígidas de formulário e padronização JSON 100% em inglês.
 
 ---
 
@@ -8,11 +8,11 @@
 
 | Método | Endpoint | Acesso | Descrição |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/pets` | Público | Lista pets com paginação e filtros via query params |
+| `GET` | `/api/pets` | Público | Lista pets com paginação e filtros (`?species=`, `?size=`, `?status=`, `?search=`) |
 | `GET` | `/api/pets/{id}` | Público | Detalhes de um pet específico |
 | `POST` | `/api/pets` | **Admin** | Cadastra novo animal (com upload de foto) |
-| `PUT` | `/api/pets/{id}` | Agente / Admin | Atualiza dados gerais do pet |
-| `PATCH` | `/api/pets/{id}/status` | Agente / Admin | Atualiza status (exige adotante se status for `adotado`) |
+| `PUT` | `/api/pets/{id}` | Agent / Admin | Atualiza dados gerais do pet |
+| `PATCH` | `/api/pets/{id}/status` | Agent / Admin | Atualiza status (exige `adopter_name` se status for `adopted`) |
 | `DELETE` | `/api/pets/{id}` | **Admin** | Remove o registro do animal |
 
 ---
@@ -34,17 +34,17 @@
   public function rules(): array
   {
       return [
-          'nome' => 'required|string|max:100',
-          'especie' => 'required|in:cao,gato,outro',
-          'porte' => 'required|in:pequeno,medio,grande',
-          'idade_aproximada' => 'required|string|max:50',
-          'sexo' => 'required|in:macho,femea',
-          'descricao' => 'nullable|string|max:1000',
-          'vacinas' => 'nullable|array',
-          'vacinas.*.nome' => 'required_with:vacinas|string|max:100',
-          'vacinas.*.data_aplicacao' => 'nullable|date',
-          'data_resgate' => 'nullable|date',
-          'foto' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
+          'name' => 'required|string|max:100',
+          'species' => 'required|in:dog,cat,other',
+          'size' => 'required|in:small,medium,large',
+          'approximate_age' => 'required|string|max:50',
+          'gender' => 'required|in:male,female',
+          'description' => 'nullable|string|max:1000',
+          'vaccines' => 'nullable|array',
+          'vaccines.*.name' => 'required_with:vaccines|string|max:100',
+          'vaccines.*.applied_at' => 'nullable|date',
+          'rescue_date' => 'nullable|date',
+          'photo' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
       ];
   }
   ```
@@ -54,33 +54,33 @@
   ```bash
   php artisan make:request UpdatePetRequest
   ```
-- **Regras:** Semelhante a `StorePetRequest`, porém com campos opcionais (`sometimes`). Qualquer agente autenticado pode autorizar.
+- **Regras:** Campos opcionais (`sometimes`). Qualquer agente autenticado pode autorizar.
 
 ### 2.3 `UpdatePetStatusRequest`
 - **Comando:**
   ```bash
   php artisan make:request UpdatePetStatusRequest
   ```
-- **Regra de Negócio Crucial (Adoção):**
+- **Regra de Negócio (Adoção):**
   ```php
   public function authorize(): bool
   {
-      return true; // Protegido pelo auth:sanctum na rota
+      return true;
   }
 
   public function rules(): array
   {
       return [
-          'status' => 'required|in:disponivel,em_processo,adotado',
-          'adotante_nome' => 'required_if:status,adotado|nullable|string|max:150',
-          'data_adocao' => 'nullable|date',
+          'status' => 'required|in:available,in_process,adopted',
+          'adopter_name' => 'required_if:status,adopted|nullable|string|max:150',
+          'adoption_date' => 'nullable|date',
       ];
   }
 
   public function messages(): array
   {
       return [
-          'adotante_nome.required_if' => 'O nome do adotante é obrigatório ao marcar o pet como adotado.',
+          'adopter_name.required_if' => 'The adopter name is required when marking a pet as adopted.',
       ];
   }
   ```
@@ -110,18 +110,18 @@ Garante que o retorno JSON seja padronizado e a URL da foto seja resolvida para 
       {
           return [
               'id' => $this->id,
-              'nome' => $this->nome,
-              'especie' => $this->especie,
-              'porte' => $this->porte,
-              'idade_aproximada' => $this->idade_aproximada,
-              'sexo' => $this->sexo,
-              'foto_url' => $this->foto_path ? url(Storage::url($this->foto_path)) : null,
-              'descricao' => $this->descricao,
-              'vacinas' => $this->vacinas ?? [],
+              'name' => $this->name,
+              'species' => $this->species,
+              'size' => $this->size,
+              'approximate_age' => $this->approximate_age,
+              'gender' => $this->gender,
+              'photo_url' => $this->photo_path ? url(Storage::url($this->photo_path)) : null,
+              'description' => $this->description,
+              'vaccines' => $this->vaccines ?? [],
               'status' => $this->status,
-              'data_resgate' => $this->data_resgate?->format('Y-m-d'),
-              'adotante_nome' => $this->adotante_nome,
-              'data_adocao' => $this->data_adocao?->format('Y-m-d'),
+              'rescue_date' => $this->rescue_date?->format('Y-m-d'),
+              'adopter_name' => $this->adopter_name,
+              'adoption_date' => $this->adoption_date?->format('Y-m-d'),
               'created_at' => $this->created_at?->toIso8601String(),
               'updated_at' => $this->updated_at?->toIso8601String(),
           ];
@@ -144,20 +144,20 @@ Garante que o retorno JSON seja padronizado e a URL da foto seja resolvida para 
   {
       $query = Pet::query();
 
-      if ($request->filled('especie')) {
-          $query->where('especie', $request->especie);
+      if ($request->filled('species')) {
+          $query->where('species', $request->species);
       }
 
-      if ($request->filled('porte')) {
-          $query->where('porte', $request->porte);
+      if ($request->filled('size')) {
+          $query->where('size', $request->size);
       }
 
       if ($request->filled('status')) {
           $query->where('status', $request->status);
       }
 
-      if ($request->filled('busca')) {
-          $query->where('nome', 'like', '%' . $request->busca . '%');
+      if ($request->filled('search')) {
+          $query->where('name', 'like', '%' . $request->search . '%');
       }
 
       $pets = $query->latest()->paginate($request->get('per_page', 15));
@@ -179,24 +179,14 @@ Route::get('/pets/{id}', [PetController::class, 'show']);
 
 // Gestão de Pets (Protegida)
 Route::middleware('auth:sanctum')->group(function () {
-    // Ações do Agente e Admin
+    // Ações de Agent e Admin
     Route::put('/pets/{id}', [PetController::class, 'update']);
     Route::patch('/pets/{id}/status', [PetController::class, 'updateStatus']);
 
-    // Ações Exclusivas do Administrador
+    // Ações Exclusivas de Admin
     Route::middleware('role.admin')->group(function () {
         Route::post('/pets', [PetController::class, 'store']);
         Route::delete('/pets/{id}', [PetController::class, 'destroy']);
     });
 });
 ```
-
----
-
-## 6. Critérios de Validação do Passo 3
-
-1. **Listagem Pública:** `GET /api/pets` retorna lista com status `200 OK` sem exigência de token.
-2. **Filtro por Espécie:** `GET /api/pets?especie=cao` retorna apenas cães.
-3. **Bloqueio de Agente no Cadastro:** `POST /api/pets` com token de agente retorna `403 Forbidden`.
-4. **Sucesso de Admin no Cadastro:** `POST /api/pets` com token de admin retorna `201 Created` e objeto criado.
-5. **Validação de Status Adotado:** `PATCH /api/pets/{id}/status` com `status: adotado` sem `adotante_nome` retorna erro `422`.
