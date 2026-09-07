@@ -1,0 +1,4 @@
+*
+!.gitignore
+!pets/
+!pets/.gitkeep

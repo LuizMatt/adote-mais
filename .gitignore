@@ -1,0 +1,34 @@
+# Ambientes e Segredos
+.env
+.env.*
+!.env.example
+
+# IDEs e Editores
+.vscode/
+.idea/
+.fleet/
+.nova/
+.zed/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node / Frontend builds futuros
+node_modules/
+dist/
+.npm/
+
+# Metadados e documentos locais do superpowers
+.superpowers/
+docs/superpowers/
+*superpowers/
