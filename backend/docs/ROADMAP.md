@@ -49,7 +49,7 @@ Execute os passos na sequência indicada. Cada arquivo possui o roteiro técnico
   - Implementação de `AuthController` (`login`, `logout`, `me`).
   - Middleware / Gate / Policy para validação de `role = admin`.
 
-- [ ] **[Passo 3: CRUD de Pets e Regras de Negócio](file:///c:/Users/luizm/Desktop/adote+/backend/docs/03-pets-api-crud.md)**
+- [x] **[Passo 3: CRUD de Pets e Regras de Negócio](file:///c:/Users/luizm/Desktop/adote+/backend/docs/03-pets-api-crud.md)**
   - Implementação do `PetController` (rotas públicas e protegidas).
   - Form Requests de validação (`StorePetRequest`, `UpdatePetRequest`, `UpdatePetStatusRequest`).
   - `PetResource` para padronização do contrato JSON e URL de fotos (`photo_url`).
